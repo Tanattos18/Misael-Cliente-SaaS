@@ -24,9 +24,9 @@ export default async function VeiculosPage() {
 
   return (
     <>
-      <Cabecalho titulo="Veículos" descricao="Despesas lançadas com veículo entram no custo da logística, no modal do veículo." />
-      <ActionForm action={criarVeiculo} className="cartao mb-6 max-w-3xl" botao="Cadastrar veículo">
-        <div className="grid gap-4 sm:grid-cols-3">
+      <Cabecalho titulo="Veículos" descricao="Despesas lançadas com veículo vão para a área que usa o veículo (na logística, também para o modal dele)." />
+      <ActionForm action={criarVeiculo} className="cartao mb-6 max-w-4xl" botao="Cadastrar veículo">
+        <div className="grid gap-4 sm:grid-cols-4">
           <Campo rotulo="Descrição"><input name="descricao" className="campo" placeholder="Ex.: Moto Honda CG 160" required /></Campo>
           <Campo rotulo="Placa"><input name="placa" className="campo" /></Campo>
           <Campo rotulo="Modal">
@@ -35,12 +35,18 @@ export default async function VeiculosPage() {
               <option value="carro">Carro</option>
             </select>
           </Campo>
+          <Campo rotulo="Usado por">
+            <select name="uso" className="campo">
+              <option value="logistica">Logística (corridas)</option>
+              <option value="enfermagem">Enfermagem (visitas)</option>
+            </select>
+          </Campo>
         </div>
       </ActionForm>
       <div className="cartao overflow-x-auto p-0">
         <table className="tabela">
           <thead>
-            <tr><th>Veículo</th><th>Placa</th><th>Modal</th><th className="text-right">Gasto total</th><th className="text-right">Combustível</th><th className="text-right">Preço médio/L</th><th>Situação</th><th /></tr>
+            <tr><th>Veículo</th><th>Placa</th><th>Modal</th><th>Usado por</th><th className="text-right">Gasto total</th><th className="text-right">Combustível</th><th className="text-right">Preço médio/L</th><th>Situação</th><th /></tr>
           </thead>
           <tbody>
             {veiculos.map(({ v, gasto, litros, combustivel }) => (
@@ -48,6 +54,7 @@ export default async function VeiculosPage() {
                 <td>{v.descricao}</td>
                 <td>{v.placa}</td>
                 <td>{v.modal === "moto" ? "Moto" : "Carro"}</td>
+                <td>{v.uso === "logistica" ? "Logística" : "Enfermagem"}</td>
                 <td className="text-right">{moeda(gasto)}</td>
                 <td className="text-right">{moeda(combustivel)}{litros ? ` · ${litros.toLocaleString("pt-BR")} L` : ""}</td>
                 <td className="text-right">{litros ? moeda(combustivel / litros) : "—"}</td>

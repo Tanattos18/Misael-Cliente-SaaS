@@ -1,0 +1,1 @@
+ALTER TABLE "veiculos" ADD COLUMN "uso" text DEFAULT 'logistica' NOT NULL;

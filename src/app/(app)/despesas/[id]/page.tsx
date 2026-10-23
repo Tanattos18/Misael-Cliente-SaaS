@@ -15,7 +15,7 @@ export default async function DespesaPage({ params }: PageProps<"/despesas/[id]"
   const [d] = await db.select().from(schema.despesas).where(eq(schema.despesas.id, Number((await params).id)));
   if (!d) notFound();
   const veiculos = await db
-    .select({ id: schema.veiculos.id, descricao: schema.veiculos.descricao, modal: schema.veiculos.modal })
+    .select({ id: schema.veiculos.id, descricao: schema.veiculos.descricao, modal: schema.veiculos.modal, uso: schema.veiculos.uso })
     .from(schema.veiculos)
     .orderBy(asc(schema.veiculos.descricao));
   const cancelada = d.status === "cancelada";

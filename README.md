@@ -75,10 +75,15 @@ Regra em `src/lib/doses.ts` (testada em `doses.test.ts`); persistência em `src/
 
 - **Veículos** (motos e carros) com gasto total, combustível e preço médio por litro.
 - **Despesas** por categoria: combustível (litros e hodômetro), manutenção, óleo/pneus/peças, transportadores terceirizados, pedágios/estacionamentos e outras. Correção e cancelamento com motivo e auditoria.
-- **Apropriação do custo:** despesa com veículo vai para Logística no modal do veículo; sem veículo, escolhe-se a área (Enfermagem, Logística + modal, ou Geral). O custo pago às transportadoras nas corridas terceirizadas entra **automaticamente** como despesa.
+- **Apropriação do custo:** despesa com veículo vai para a área que usa o veículo (cadastro: logística ou enfermagem; na logística, também para o modal); sem veículo, escolhe-se a área (Enfermagem, Logística + modal, ou Geral). O custo pago às transportadoras nas corridas terceirizadas entra **automaticamente** como despesa.
 - **Resultado** (`/resultado`): receita × despesa por área (enfermagem, logística, gerais), por modal (moto, carro, terceirizado), receita por serviço, despesas por categoria vs mês anterior, combustível por veículo (R$/L, km rodados, km/L) e comparativo dos últimos 6 meses com gráfico.
 
 Cálculo em `src/lib/resultado.ts` (testado em `resultado.test.ts`).
+
+## Etapa 4 — painel gerencial
+
+- **Painel** (`/`): alertas (fechamentos em atraso, mês anterior sem fechamento, fechamentos aguardando envio, dias de tratamento sem conferência), faturamento/despesas/resultado/margem, a receber e em atraso, faturamento por serviço, corridas por modal, combustível e manutenção, resultado por área e modal, a receber por empresa, faturamento por empresa no mês, pacientes com maior faturamento e gráfico receita × despesa de 6 meses.
+- **Excel do resultado mensal** (`/api/resultado/AAAA-MM`): resumo por área/modal, receita por serviço, despesas por categoria e lista de despesas — para o contador.
 
 ## Pendências com o cliente
 
@@ -86,9 +91,12 @@ Cálculo em `src/lib/resultado.ts` (testado em `resultado.test.ts`).
 2. Tabela completa de cidades com valores de **moto e carro** (hoje só moto: Goiânia 25, Aparecida 30, Goianira 40, Bela Vista 60; falta a cidade de R$ 35).
 3. Volume mensal aproximado (pacientes/corridas) para dimensionar a hospedagem.
 
-## Próximas etapas
+## Próximos passos possíveis
 
-- **Etapa 4:** painel gerencial completo, comparativos entre meses.
+- Publicar em produção (Supabase + Vercel ou VPS) e cadastrar os dados reais.
+- PWA/app para a equipe marcar dose realizada e corrida no celular.
+- Portal para a empresa contratante conferir e aprovar o fechamento online.
+- Emissão de NFS-e integrada e aviso de atraso por e-mail/WhatsApp.
 
 ## Produção
 

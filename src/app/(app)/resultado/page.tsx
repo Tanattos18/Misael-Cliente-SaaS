@@ -48,10 +48,13 @@ export default async function ResultadoPage({ searchParams }: PageProps<"/result
         titulo="Resultado financeiro"
         descricao={`${competenciaExtenso(competencia)} · receita pela data do serviço realizado; despesas pela data do gasto`}
         acoes={
-          <form className="flex gap-2">
-            <input type="month" name="mes" defaultValue={competencia} className="campo" />
-            <button className="botao-sec">Ver</button>
-          </form>
+          <>
+            <form className="flex gap-2">
+              <input type="month" name="mes" defaultValue={competencia} className="campo" />
+              <button className="botao-sec">Ver</button>
+            </form>
+            <a href={`/api/resultado/${competencia}`} className="botao">Baixar Excel</a>
+          </>
         }
       />
 

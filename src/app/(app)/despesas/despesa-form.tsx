@@ -14,7 +14,7 @@ import type { EstadoAcao } from "@/lib/form";
 import { moeda } from "@/lib/formato";
 import { salvarDespesa } from "./actions";
 
-type VeiculoOpcao = { id: number; descricao: string; modal: "moto" | "carro" };
+type VeiculoOpcao = { id: number; descricao: string; modal: "moto" | "carro"; uso: "logistica" | "enfermagem" };
 
 export type DespesaInicial = {
   id: number;
@@ -112,7 +112,8 @@ export function DespesaForm({ veiculos, hoje, inicial, bloqueado }: { veiculos: 
 
         {veiculo ? (
           <p className="text-sm text-gray-600 sm:col-span-2 lg:col-span-4">
-            Custo apropriado em <strong>Logística · {ROTULO_MODAL[veiculo.modal]}</strong> (pelo veículo).
+            Custo apropriado em{" "}
+            <strong>{veiculo.uso === "logistica" ? `Logística · ${ROTULO_MODAL[veiculo.modal]}` : "Enfermagem"}</strong> (pelo uso do veículo).
           </p>
         ) : (
           <>
@@ -135,7 +136,7 @@ export function DespesaForm({ veiculos, hoje, inicial, bloqueado }: { veiculos: 
             )}
           </>
         )}
-        {veiculo && <input type="hidden" name="area" value="logistica" />}
+        {veiculo && <input type="hidden" name="area" value={veiculo.uso} />}
 
         <label className="sm:col-span-2 lg:col-span-4">
           <span className="rotulo">Descrição</span>

@@ -9,7 +9,7 @@ export default async function NovaDespesaPage() {
   await exigirUsuario();
   const db = await getDb();
   const veiculos = await db
-    .select({ id: schema.veiculos.id, descricao: schema.veiculos.descricao, modal: schema.veiculos.modal })
+    .select({ id: schema.veiculos.id, descricao: schema.veiculos.descricao, modal: schema.veiculos.modal, uso: schema.veiculos.uso })
     .from(schema.veiculos)
     .where(eq(schema.veiculos.ativo, true))
     .orderBy(asc(schema.veiculos.descricao));

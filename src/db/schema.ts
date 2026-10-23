@@ -199,6 +199,8 @@ export const veiculos = pgTable("veiculos", {
   descricao: text("descricao").notNull(),
   placa: text("placa"),
   modal: text("modal", { enum: ["moto", "carro"] }).notNull(),
+  // Área que usa o veículo: os custos dele vão para essa área no resultado.
+  uso: text("uso", { enum: ["logistica", "enfermagem"] }).notNull().default("logistica"),
   ativo: boolean("ativo").notNull().default(true),
   criadoEm: criadoEm(),
 });

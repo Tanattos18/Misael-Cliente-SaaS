@@ -190,12 +190,15 @@ async function main() {
     .returning();
 
   // --- Veículos e despesas (setembro e outubro) ---
-  const veiculo = async (descricao: string, placa: string, modal: "moto" | "carro") =>
-    (await db.insert(schema.veiculos).values({ descricao, placa, modal }).returning())[0].id;
-  const cg = await veiculo("Moto Honda CG 160", "QWE1A23", "moto");
-  const factor = await veiculo("Moto Yamaha Factor 150", "RTY2B34", "moto");
-  const mobi = await veiculo("Carro Fiat Mobi", "ABC3D45", "carro");
-  const modalDe = { [cg]: "moto", [factor]: "moto", [mobi]: "carro" } as const;
+  const veiculos: Record<number, { modal: "moto" | "carro"; uso: "logistica" | "enfermagem" }> = {};
+  const veiculo = async (descricao: string, placa: string, modal: "moto" | "carro", uso: "logistica" | "enfermagem") => {
+    const [v] = await db.insert(schema.veiculos).values({ descricao, placa, modal, uso }).returning();
+    veiculos[v.id] = { modal, uso };
+    return v.id;
+  };
+  const cg = await veiculo("Moto Honda CG 160", "QWE1A23", "moto", "logistica");
+  const factor = await veiculo("Moto Yamaha Factor 150 (visitas da enfermagem)", "RTY2B34", "moto", "enfermagem");
+  const mobi = await veiculo("Carro Fiat Mobi", "ABC3D45", "carro", "logistica");
 
   let despesasCriadas = 0;
   async function despesa(
@@ -211,8 +214,10 @@ async function main() {
       categoria,
       valor,
       descricao,
-      area: opts.veiculoId ? "logistica" : (opts.area ?? "geral"),
-      modal: opts.veiculoId ? modalDe[opts.veiculoId] : (opts.modal ?? null),
+      area: opts.veiculoId ? veiculos[opts.veiculoId].uso : (opts.area ?? "geral"),
+      modal: opts.veiculoId
+        ? (veiculos[opts.veiculoId].uso === "logistica" ? veiculos[opts.veiculoId].modal : null)
+        : (opts.modal ?? null),
       veiculoId: opts.veiculoId ?? null,
       litros: opts.litros ?? null,
       km: opts.km ?? null,

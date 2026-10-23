@@ -34,9 +34,9 @@ export async function salvarDespesa(_: EstadoAcao, formData: FormData): Promise<
   if (dados.veiculoId) {
     const [v] = await db.select().from(schema.veiculos).where(eq(schema.veiculos.id, dados.veiculoId));
     if (!v) return { erro: "Veículo não encontrado." };
-    // Custo de veículo é sempre da logística, no modal do veículo.
-    area = "logistica";
-    modal = v.modal;
+    // Custo do veículo vai para a área que o usa; na logística, também para o modal dele.
+    area = v.uso;
+    modal = v.uso === "logistica" ? v.modal : undefined;
   }
   if (area !== "logistica") modal = undefined;
 
@@ -91,14 +91,19 @@ export async function cancelarDespesa(_: EstadoAcao, formData: FormData): Promis
   redirect("/despesas");
 }
 
-const Veiculo = z.object({ descricao: z.string().min(2, "informe a descrição"), placa: zTexto, modal: z.enum(["moto", "carro"]) });
+const Veiculo = z.object({
+  descricao: z.string().min(2, "informe a descrição"),
+  placa: zTexto,
+  modal: z.enum(["moto", "carro"]),
+  uso: z.enum(["logistica", "enfermagem"]),
+});
 
 export async function criarVeiculo(_: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
   const usuario = await exigirUsuario();
   const { dados, erro } = lerForm(formData, Veiculo);
   if (!dados) return { erro };
   const db = await getDb();
-  const registro = { descricao: dados.descricao, placa: dados.placa?.toUpperCase() ?? null, modal: dados.modal };
+  const registro = { descricao: dados.descricao, placa: dados.placa?.toUpperCase() ?? null, modal: dados.modal, uso: dados.uso };
   const [v] = await db.insert(schema.veiculos).values(registro).returning();
   await auditar(db, usuario.uid, "criar", "veiculo", v.id, registro);
   revalidatePath("/veiculos");
