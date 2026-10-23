@@ -1,0 +1,38 @@
+import { drizzle as drizzlePostgres, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import * as schema from "./schema";
+
+export type DB = PostgresJsDatabase<typeof schema>;
+
+declare global {
+  var __curalogDb: Promise<DB> | undefined;
+}
+
+/**
+ * Produção: PostgreSQL via DATABASE_URL.
+ * Desenvolvimento sem DATABASE_URL: PGlite (Postgres embutido) gravando em PGLITE_DIR.
+ */
+async function conectar(): Promise<DB> {
+  const url = process.env.DATABASE_URL;
+  if (url) {
+    const postgres = (await import("postgres")).default;
+    return drizzlePostgres(postgres(url, { max: 10 }), { schema });
+  }
+  const { PGlite } = await import("@electric-sql/pglite");
+  const { drizzle } = await import("drizzle-orm/pglite");
+  const { mkdirSync } = await import("node:fs");
+  const { homedir } = await import("node:os");
+  const { join } = await import("node:path");
+  // Fora da pasta do projeto por padrão, para não ser sincronizado pelo OneDrive/Dropbox.
+  const dir = process.env.PGLITE_DIR ?? join(homedir(), ".curalog", "pglite");
+  if (!dir.startsWith("memory://")) mkdirSync(dir, { recursive: true });
+  const client = new PGlite(dir);
+  // A API de consulta é a mesma; o tipo de produção é usado em todo o código.
+  return drizzle(client, { schema }) as unknown as DB;
+}
+
+export function getDb(): Promise<DB> {
+  globalThis.__curalogDb ??= conectar();
+  return globalThis.__curalogDb;
+}
+
+export { schema };
