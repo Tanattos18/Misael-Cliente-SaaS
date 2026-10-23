@@ -29,6 +29,7 @@ O banco local fica em `~/.curalog/pglite` (fora do OneDrive de propósito — si
 | `npm run typecheck` / `lint` | Verificações |
 | `npm run db:generate` | Gera migração após alterar `src/db/schema.ts` |
 | `npm run db:migrate` / `db:seed` | Aplica migrações / carga inicial |
+| `npm run db:senha -- <email> <senha>` | Redefine a senha de um usuário (e o reativa) |
 
 ## Etapa 1 — o que já está pronto
 
