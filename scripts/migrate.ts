@@ -1,4 +1,4 @@
-import { getDb } from "../src/db";
+import { fecharDb, getDb } from "../src/db";
 
 // Aplica as migrações da pasta ./drizzle no banco configurado (DATABASE_URL ou PGlite).
 async function main() {
@@ -12,6 +12,7 @@ async function main() {
     await migrate(db as any, { migrationsFolder: "./drizzle" });
   }
   console.log("Migrações aplicadas.");
+  await fecharDb();
   process.exit(0);
 }
 

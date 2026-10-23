@@ -9,6 +9,7 @@ import { auditar } from "@/lib/auditoria";
 import { exigirAdmin, exigirUsuario } from "@/lib/auth";
 import { CHAVE_ACRESCIMO_TERCEIRIZADO } from "@/lib/dominio";
 import { lerForm, zValor, type EstadoAcao } from "@/lib/form";
+import { CHAVE_FIM_INCLUSIVO } from "@/lib/planos";
 
 const zSenha = z.string().min(8, "mínimo de 8 caracteres");
 
@@ -60,7 +61,7 @@ export async function trocarSenha(_: EstadoAcao, formData: FormData): Promise<Es
   return { ok: "Senha alterada." };
 }
 
-const Config = z.object({ acrescimo: zValor.pipe(z.number().max(500)) });
+const Config = z.object({ acrescimo: zValor.pipe(z.number().max(500)), fimInclusivo: z.string().optional() });
 
 export async function salvarConfiguracoes(_: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
   const admin = await exigirAdmin();
@@ -71,6 +72,11 @@ export async function salvarConfiguracoes(_: EstadoAcao, formData: FormData): Pr
     .insert(schema.configuracoes)
     .values({ chave: CHAVE_ACRESCIMO_TERCEIRIZADO, valor: String(dados.acrescimo) })
     .onConflictDoUpdate({ target: schema.configuracoes.chave, set: { valor: String(dados.acrescimo) } });
+  const inclusivo = String(dados.fimInclusivo === "on");
+  await db
+    .insert(schema.configuracoes)
+    .values({ chave: CHAVE_FIM_INCLUSIVO, valor: inclusivo })
+    .onConflictDoUpdate({ target: schema.configuracoes.chave, set: { valor: inclusivo } });
   await auditar(db, admin.uid, "editar", "configuracao", null, dados);
   revalidatePath("/configuracoes");
   return { ok: "Configurações salvas." };

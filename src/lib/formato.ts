@@ -44,6 +44,11 @@ export function competenciaExtenso(competencia: string): string {
   return `${MESES[mes - 1]}/${ano}`;
 }
 
+/** Primeiro dia do mês anterior: "2026-03-15" → "2026-02-01" */
+export function inicioMesAnterior(iso: string): string {
+  return `${somarDias(`${iso.slice(0, 7)}-01`, -1).slice(0, 7)}-01`;
+}
+
 /** Soma dias a uma data AAAA-MM-DD. */
 export function somarDias(iso: string, dias: number): string {
   const d = new Date(`${iso}T12:00:00Z`);

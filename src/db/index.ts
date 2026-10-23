@@ -5,6 +5,7 @@ export type DB = PostgresJsDatabase<typeof schema>;
 
 declare global {
   var __curalogDb: Promise<DB> | undefined;
+  var __curalogFechar: (() => Promise<void>) | undefined;
 }
 
 /**
@@ -15,7 +16,9 @@ async function conectar(): Promise<DB> {
   const url = process.env.DATABASE_URL;
   if (url) {
     const postgres = (await import("postgres")).default;
-    return drizzlePostgres(postgres(url, { max: 10 }), { schema });
+    const sql = postgres(url, { max: 10 });
+    globalThis.__curalogFechar = () => sql.end();
+    return drizzlePostgres(sql, { schema });
   }
   const { PGlite } = await import("@electric-sql/pglite");
   const { drizzle } = await import("drizzle-orm/pglite");
@@ -26,6 +29,7 @@ async function conectar(): Promise<DB> {
   const dir = process.env.PGLITE_DIR ?? join(homedir(), ".curalog", "pglite");
   if (!dir.startsWith("memory://")) mkdirSync(dir, { recursive: true });
   const client = new PGlite(dir);
+  globalThis.__curalogFechar = () => client.close();
   // A API de consulta é a mesma; o tipo de produção é usado em todo o código.
   return drizzle(client, { schema }) as unknown as DB;
 }
@@ -33,6 +37,13 @@ async function conectar(): Promise<DB> {
 export function getDb(): Promise<DB> {
   globalThis.__curalogDb ??= conectar();
   return globalThis.__curalogDb;
+}
+
+/** Fecha a conexão. Scripts devem chamar antes de sair: sem isso o Postgres pula a numeração dos IDs. */
+export async function fecharDb() {
+  await globalThis.__curalogFechar?.();
+  globalThis.__curalogDb = undefined;
+  globalThis.__curalogFechar = undefined;
 }
 
 export { schema };

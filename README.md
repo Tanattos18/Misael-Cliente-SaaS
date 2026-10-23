@@ -61,15 +61,24 @@ drizzle/                  migrações SQL
 scripts/                  migrate e seed
 ```
 
+## Etapa 2 — tratamentos (previsto × realizado)
+
+- **Tratamentos** de medicação (várias medicações por paciente, cada uma com sua frequência: 1x, 12/12h, 8/8h, 6/6h, 4/4h ou horários livres) e de curativo (1x/dia, contínuo ou com término).
+- **Previstos calculados** por dia a partir de início/término com data e hora. Cada dose de cada medicação conta como um atendimento (8/8h + 12/12h = 5/dia). Doses antes do início não contam; o horário exato do término **não conta** por padrão (6h→6h com 6h/14h/22h = 3 doses) — ajustável em Configurações.
+- **Conferência** mensal por tratamento: previsto × realizado dia a dia, com dias pendentes, parciais e não realizados (0). Atalho “confirmar pendentes como previsto”.
+- Os realizados viram lançamentos normais (um por dia, com a quantidade feita) e entram no fechamento; depois de fechados não mudam.
+- A lista de tratamentos mostra quantos dias estão sem conferência.
+
+Regra em `src/lib/doses.ts` (testada em `doses.test.ts`); persistência em `src/lib/planos.ts`.
+
 ## Pendências com o cliente
 
-1. Medicação: o horário final do tratamento conta (6h→6h = 3 ou 4 doses)? Doses de medicações diferentes no mesmo horário contam separadas?
+1. Confirmar as duas regras adotadas: término exclusivo (3 doses no exemplo 6h→6h) e doses de medicações diferentes no mesmo horário contadas separadamente.
 2. Tabela completa de cidades com valores de **moto e carro** (hoje só moto: Goiânia 25, Aparecida 30, Goianira 40, Bela Vista 60; falta a cidade de R$ 35).
 3. Volume mensal aproximado (pacientes/corridas) para dimensionar a hospedagem.
 
 ## Próximas etapas
 
-- **Etapa 2:** planos de medicação (várias medicações por paciente com frequências 24/12/8h) e curativos diários, geração de previstos e conferência previsto × realizado.
 - **Etapa 3:** despesas (combustível com litros, manutenção por veículo, pedágios), pagamento de terceirizados como despesa, resultado por área e por modal.
 - **Etapa 4:** painel gerencial completo, comparativos entre meses.
 

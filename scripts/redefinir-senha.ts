@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
-import { getDb, schema } from "../src/db";
+import { fecharDb, getDb, schema } from "../src/db";
 
 /**
  * Redefine a senha de um usuário e o reativa.
@@ -23,6 +23,7 @@ async function main() {
     process.exit(1);
   }
   console.log(`Senha redefinida para ${email}.`);
+  await fecharDb();
   process.exit(0);
 }
 

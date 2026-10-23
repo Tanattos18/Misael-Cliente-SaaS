@@ -1,14 +1,16 @@
 import { eq, like } from "drizzle-orm";
-import { getDb, schema, type DB } from "../src/db";
+import { fecharDb, getDb, schema, type DB } from "../src/db";
 import type { Modal, Tipo } from "../src/lib/dominio";
 import { gerarFechamento } from "../src/lib/fechamento";
 import { centavos, hojeISO, somarDias } from "../src/lib/formato";
 import { tarifaPara } from "../src/lib/lancamentos";
+import { dosesPrevistas } from "../src/lib/doses";
+import { carregarPlano, registrarRealizados } from "../src/lib/planos";
 import { valorTerceirizado } from "../src/lib/tarifas";
 
 /**
  * Dados FICTÍCIOS para demonstração ao cliente.
- * Cria 3 empresas, 9 pacientes, lançamentos de setembro (já fechados, em vários
+ * Cria 3 empresas, 9 pacientes, 7 tratamentos, lançamentos de setembro (já fechados, em vários
  * status de recebimento) e de outubro até hoje (em aberto, prontos para fechar).
  * Rode depois de db:migrate e db:seed. Não roda duas vezes.
  */
@@ -18,6 +20,7 @@ async function main() {
   const existe = await db.select().from(schema.empresas).where(like(schema.empresas.nome, "%(demo)%")).limit(1);
   if (existe.length) {
     console.log("Dados de demonstração já existem. Nada a fazer.");
+    await fecharDb();
     process.exit(0);
   }
   const [admin] = await db.select().from(schema.usuarios).where(eq(schema.usuarios.perfil, "admin")).limit(1);
@@ -111,16 +114,50 @@ async function main() {
     return lista;
   };
 
-  // Medicações: atendimentos/dia = soma das doses (ex.: 12/12h + 8/8h = 5).
-  for (const d of dias("2026-09-01", "2026-09-10")) await lancar(p.maria, "medicacao", d, { quantidade: 5, obs: "Antibiótico 8/8h + analgésico 12/12h" });
-  for (const d of dias("2026-10-14", "2026-10-21")) await lancar(p.maria, "medicacao", d, { quantidade: 2, obs: "12/12h" });
-  for (const d of dias("2026-09-15", "2026-10-12")) await lancar(p.antonio, "medicacao", d, { quantidade: 3, obs: "8/8h" });
-  for (const d of dias("2026-09-05", "2026-09-25")) await lancar(p.raimunda, "medicacao", d, { quantidade: 2, obs: "12/12h" });
-  for (const d of dias("2026-10-05", "2026-10-19")) await lancar(p.helena, "medicacao", d, { quantidade: 1, obs: "1x ao dia" });
+  // Tratamentos: os previstos saem da prescrição; os realizados são confirmados na conferência.
+  // ajustes: dia → quantidade realizada diferente do previsto; ate: último dia já conferido.
+  async function tratamento(
+    pacienteId: number,
+    tipo: "medicacao" | "curativo",
+    inicio: [string, string],
+    fim: [string, string] | null,
+    itens: { descricao: string; horarios: string }[],
+    opts: { ate?: string; ajustes?: Record<string, number>; obs?: string } = {},
+  ) {
+    const [{ id }] = await db
+      .insert(schema.planos)
+      .values({ pacienteId, tipo, inicioData: inicio[0], inicioHora: inicio[1], fimData: fim?.[0] ?? null, fimHora: fim?.[1] ?? null, observacoes: opts.obs ?? null, criadoPor: admin.id })
+      .returning();
+    await db.insert(schema.planoItens).values(itens.map((i) => ({ planoId: id, ...i })));
+    const plano = (await carregarPlano(db, id))!;
+    const ate = opts.ate ?? hoje;
+    const previstos = dosesPrevistas(plano, inicio[0], ate);
+    const quantidades = Object.fromEntries(previstos.map((d) => [d.data, opts.ajustes?.[d.data] ?? d.doses.length]));
+    await registrarRealizados(db, admin.id, plano, quantidades);
+    total += previstos.length;
+  }
+
+  // Medicações: atendimentos/dia = soma das doses (ex.: 8/8h + 12/12h = 5).
+  await tratamento(p.maria, "medicacao", ["2026-09-01", "06:00"], ["2026-09-11", "06:00"], [
+    { descricao: "Ceftriaxona (8/8h)", horarios: "06:00,14:00,22:00" },
+    { descricao: "Dipirona (12/12h)", horarios: "06:00,18:00" },
+  ]);
+  await tratamento(p.maria, "medicacao", ["2026-10-14", "08:00"], ["2026-10-22", "08:00"], [
+    { descricao: "Enoxaparina (12/12h)", horarios: "08:00,20:00" },
+  ], { ate: "2026-10-20", ajustes: { "2026-10-18": 1 }, obs: "Dia 18: paciente recusou a dose da noite" });
+  await tratamento(p.antonio, "medicacao", ["2026-09-15", "06:00"], ["2026-10-13", "06:00"], [
+    { descricao: "Meropenem (8/8h)", horarios: "06:00,14:00,22:00" },
+  ]);
+  await tratamento(p.raimunda, "medicacao", ["2026-09-05", "08:00"], ["2026-09-26", "08:00"], [
+    { descricao: "Insulina (12/12h)", horarios: "08:00,20:00" },
+  ]);
+  await tratamento(p.helena, "medicacao", ["2026-10-05", "09:00"], ["2026-10-20", "09:00"], [
+    { descricao: "Vitamina B12 (1x/dia)", horarios: "09:00" },
+  ], { ajustes: { "2026-10-12": 0 } });
 
   // Curativos: 1x por dia, 7 dias por semana.
-  for (const d of dias("2026-09-01", hoje)) await lancar(p.joao, "curativo", d);
-  for (const d of dias("2026-09-10", "2026-10-09")) await lancar(p.francisca, "curativo", d);
+  await tratamento(p.joao, "curativo", ["2026-09-01", "08:00"], null, [{ descricao: "Curativo", horarios: "08:00" }], { ate: "2026-10-20" });
+  await tratamento(p.francisca, "curativo", ["2026-09-10", "10:00"], ["2026-10-10", "10:00"], [{ descricao: "Curativo", horarios: "10:00" }]);
 
   // Coletas: vários pacientes no mesmo dia.
   for (const [pac, d] of [
@@ -169,7 +206,8 @@ async function main() {
   await f(C, "enfermagem"); // calculado, aguardando envio
   // Logística da empresa C em setembro fica em aberto, para mostrar "Gerar todos".
 
-  console.log(`Demonstração criada: 3 empresas, 9 pacientes, ${total + (cancelar ? 1 : 0)} lançamentos, 5 fechamentos de setembro.`);
+  console.log(`Demonstração criada: 3 empresas, 9 pacientes, 7 tratamentos, ${total + (cancelar ? 1 : 0)} lançamentos, 5 fechamentos de setembro.`);
+  await fecharDb();
   process.exit(0);
 }
 

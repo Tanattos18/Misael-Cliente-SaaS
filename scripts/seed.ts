@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
-import { getDb, schema } from "../src/db";
+import { fecharDb, getDb, schema } from "../src/db";
 import { ACRESCIMO_TERCEIRIZADO_PADRAO, CHAVE_ACRESCIMO_TERCEIRIZADO } from "../src/lib/dominio";
 
 /**
@@ -51,6 +51,7 @@ async function main() {
   }
 
   console.log("Carga inicial concluída.");
+  await fecharDb();
   process.exit(0);
 }
 

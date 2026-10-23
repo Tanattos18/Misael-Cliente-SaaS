@@ -5,6 +5,7 @@ import { sair } from "../login/actions";
 const MENU = [
   { titulo: "Operação", itens: [
     { href: "/", rotulo: "Painel" },
+    { href: "/tratamentos", rotulo: "Tratamentos (previsto × realizado)" },
     { href: "/lancamentos", rotulo: "Lançamentos" },
     { href: "/lancamentos/novo?area=enfermagem", rotulo: "+ Enfermagem" },
     { href: "/lancamentos/novo?area=logistica", rotulo: "+ Corrida" },
