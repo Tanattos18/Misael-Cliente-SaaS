@@ -189,6 +189,64 @@ async function main() {
     .values({ area: "enfermagem", tipo: "coleta", pacienteId: p.helena, empresaId: C, data: "2026-10-16", valorUnitario: 55, valorTotal: 55, status: "cancelado", motivoCancelamento: "Paciente remarcou a coleta", criadoPor: admin.id })
     .returning();
 
+  // --- Veículos e despesas (setembro e outubro) ---
+  const veiculo = async (descricao: string, placa: string, modal: "moto" | "carro") =>
+    (await db.insert(schema.veiculos).values({ descricao, placa, modal }).returning())[0].id;
+  const cg = await veiculo("Moto Honda CG 160", "QWE1A23", "moto");
+  const factor = await veiculo("Moto Yamaha Factor 150", "RTY2B34", "moto");
+  const mobi = await veiculo("Carro Fiat Mobi", "ABC3D45", "carro");
+  const modalDe = { [cg]: "moto", [factor]: "moto", [mobi]: "carro" } as const;
+
+  let despesasCriadas = 0;
+  async function despesa(
+    data: string,
+    categoria: (typeof schema.despesas.$inferInsert)["categoria"],
+    valor: number,
+    descricao: string,
+    opts: { veiculoId?: number; litros?: number; km?: number; area?: "enfermagem" | "logistica" | "geral"; modal?: "moto" | "carro" | "terceirizado" } = {},
+  ) {
+    if (data > hoje) return;
+    await db.insert(schema.despesas).values({
+      data,
+      categoria,
+      valor,
+      descricao,
+      area: opts.veiculoId ? "logistica" : (opts.area ?? "geral"),
+      modal: opts.veiculoId ? modalDe[opts.veiculoId] : (opts.modal ?? null),
+      veiculoId: opts.veiculoId ?? null,
+      litros: opts.litros ?? null,
+      km: opts.km ?? null,
+      criadoPor: admin.id,
+    });
+    despesasCriadas++;
+  }
+
+  // Abastecimentos: motos a cada 4 dias, carro semanal (gasolina a ~R$ 6,19/L).
+  let kmCg = 18_200;
+  let kmFactor = 9_850;
+  let kmMobi = 42_300;
+  for (const [i, d] of dias("2026-09-01", hoje, 4).entries()) {
+    const l1 = 6 + (i % 3) * 0.5;
+    await despesa(d, "combustivel", centavos(l1 * 6.19), "Posto — gasolina comum", { veiculoId: cg, litros: l1, km: (kmCg += 170 + (i % 4) * 15) });
+    const l2 = 5.5 + (i % 2) * 0.8;
+    await despesa(somarDias(d, 1), "combustivel", centavos(l2 * 6.19), "Posto — gasolina comum", { veiculoId: factor, litros: l2, km: (kmFactor += 160 + (i % 3) * 20) });
+  }
+  for (const [i, d] of dias("2026-09-03", hoje, 7).entries()) {
+    const l = 28 + (i % 3) * 3;
+    await despesa(d, "combustivel", centavos(l * 6.19), "Posto — gasolina comum", { veiculoId: mobi, litros: l, km: (kmMobi += 340 + (i % 2) * 40) });
+    await despesa(somarDias(d, 2), "pedagio_estacionamento", 15, "Estacionamento hospital", { area: "logistica", modal: "carro" });
+  }
+  await despesa("2026-09-12", "manutencao", 180, "Revisão 18.000 km", { veiculoId: cg });
+  await despesa("2026-09-20", "oleo_pneus_pecas", 65, "Troca de óleo", { veiculoId: factor });
+  await despesa("2026-09-26", "oleo_pneus_pecas", 95, "Pastilhas de freio", { veiculoId: cg });
+  await despesa("2026-10-03", "manutencao", 120, "Alinhamento e balanceamento", { veiculoId: mobi });
+  await despesa("2026-10-15", "oleo_pneus_pecas", 420, "Par de pneus", { veiculoId: mobi });
+  await despesa("2026-10-17", "oleo_pneus_pecas", 70, "Troca de óleo", { veiculoId: cg });
+  await despesa("2026-09-05", "outras", 320, "Materiais de enfermagem (luvas, gazes, seringas)", { area: "enfermagem" });
+  await despesa("2026-10-05", "outras", 290, "Materiais de enfermagem (luvas, gazes, seringas)", { area: "enfermagem" });
+  await despesa("2026-09-10", "outras", 400, "Contabilidade", { area: "geral" });
+  await despesa("2026-10-10", "outras", 400, "Contabilidade", { area: "geral" });
+
   // --- Setembro: fechamentos em vários status de recebimento ---
   const f = async (empresaId: number, area: "enfermagem" | "logistica") => gerarFechamento(db, admin.id, empresaId, area, "2026-09");
   const status = (id: number, v: Partial<typeof schema.fechamentos.$inferInsert>) =>
@@ -206,7 +264,7 @@ async function main() {
   await f(C, "enfermagem"); // calculado, aguardando envio
   // Logística da empresa C em setembro fica em aberto, para mostrar "Gerar todos".
 
-  console.log(`Demonstração criada: 3 empresas, 9 pacientes, 7 tratamentos, ${total + (cancelar ? 1 : 0)} lançamentos, 5 fechamentos de setembro.`);
+  console.log(`Demonstração criada: 3 empresas, 9 pacientes, 7 tratamentos, ${total + (cancelar ? 1 : 0)} lançamentos, 3 veículos, ${despesasCriadas} despesas, 5 fechamentos de setembro.`);
   await fecharDb();
   process.exit(0);
 }

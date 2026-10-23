@@ -58,6 +58,33 @@ export function areaDoTipo(tipo: Tipo): Area {
   return tipo === "corrida" ? "logistica" : "enfermagem";
 }
 
+export const CATEGORIAS_DESPESA = [
+  "combustivel",
+  "manutencao",
+  "oleo_pneus_pecas",
+  "terceirizado",
+  "pedagio_estacionamento",
+  "outras",
+] as const;
+export type CategoriaDespesa = (typeof CATEGORIAS_DESPESA)[number];
+
+export const ROTULO_CATEGORIA: Record<CategoriaDespesa, string> = {
+  combustivel: "Combustível",
+  manutencao: "Manutenção",
+  oleo_pneus_pecas: "Óleo, pneus e peças",
+  terceirizado: "Transportadores terceirizados",
+  pedagio_estacionamento: "Pedágios e estacionamentos",
+  outras: "Outras despesas",
+};
+
+export const AREAS_DESPESA = ["logistica", "enfermagem", "geral"] as const;
+export type AreaDespesa = (typeof AREAS_DESPESA)[number];
+export const ROTULO_AREA_DESPESA: Record<AreaDespesa, string> = {
+  logistica: "Logística / home care",
+  enfermagem: "Enfermagem",
+  geral: "Geral (empresa)",
+};
+
 /** Acréscimo padrão sobre o custo do terceirizado: 25% administrativo + 5% por adiantar o pagamento. */
 export const ACRESCIMO_TERCEIRIZADO_PADRAO = 30;
 export const CHAVE_ACRESCIMO_TERCEIRIZADO = "acrescimo_terceirizado_pct";

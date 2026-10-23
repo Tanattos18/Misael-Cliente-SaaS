@@ -14,6 +14,12 @@ const MENU = [
     { href: "/fechamentos/novo", rotulo: "Novo fechamento" },
     { href: "/fechamentos", rotulo: "Histórico / recebimentos" },
   ]},
+  { titulo: "Financeiro", itens: [
+    { href: "/despesas/novo", rotulo: "+ Despesa" },
+    { href: "/despesas", rotulo: "Despesas" },
+    { href: "/resultado", rotulo: "Resultado por área" },
+    { href: "/veiculos", rotulo: "Veículos" },
+  ]},
   { titulo: "Cadastros", itens: [
     { href: "/pacientes", rotulo: "Pacientes" },
     { href: "/empresas", rotulo: "Empresas" },

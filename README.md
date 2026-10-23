@@ -71,6 +71,15 @@ scripts/                  migrate e seed
 
 Regra em `src/lib/doses.ts` (testada em `doses.test.ts`); persistência em `src/lib/planos.ts`.
 
+## Etapa 3 — financeiro
+
+- **Veículos** (motos e carros) com gasto total, combustível e preço médio por litro.
+- **Despesas** por categoria: combustível (litros e hodômetro), manutenção, óleo/pneus/peças, transportadores terceirizados, pedágios/estacionamentos e outras. Correção e cancelamento com motivo e auditoria.
+- **Apropriação do custo:** despesa com veículo vai para Logística no modal do veículo; sem veículo, escolhe-se a área (Enfermagem, Logística + modal, ou Geral). O custo pago às transportadoras nas corridas terceirizadas entra **automaticamente** como despesa.
+- **Resultado** (`/resultado`): receita × despesa por área (enfermagem, logística, gerais), por modal (moto, carro, terceirizado), receita por serviço, despesas por categoria vs mês anterior, combustível por veículo (R$/L, km rodados, km/L) e comparativo dos últimos 6 meses com gráfico.
+
+Cálculo em `src/lib/resultado.ts` (testado em `resultado.test.ts`).
+
 ## Pendências com o cliente
 
 1. Confirmar as duas regras adotadas: término exclusivo (3 doses no exemplo 6h→6h) e doses de medicações diferentes no mesmo horário contadas separadamente.
@@ -79,7 +88,6 @@ Regra em `src/lib/doses.ts` (testada em `doses.test.ts`); persistência em `src/
 
 ## Próximas etapas
 
-- **Etapa 3:** despesas (combustível com litros, manutenção por veículo, pedágios), pagamento de terceirizados como despesa, resultado por área e por modal.
 - **Etapa 4:** painel gerencial completo, comparativos entre meses.
 
 ## Produção

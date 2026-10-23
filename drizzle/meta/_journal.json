@@ -15,6 +15,13 @@
       "when": 1792788450351,
       "tag": "0001_tratamentos",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792791617566,
+      "tag": "0002_financeiro",
+      "breakpoints": true
     }
   ]
 }

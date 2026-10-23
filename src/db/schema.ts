@@ -194,6 +194,39 @@ export const lancamentos = pgTable(
   ],
 );
 
+export const veiculos = pgTable("veiculos", {
+  id: serial("id").primaryKey(),
+  descricao: text("descricao").notNull(),
+  placa: text("placa"),
+  modal: text("modal", { enum: ["moto", "carro"] }).notNull(),
+  ativo: boolean("ativo").notNull().default(true),
+  criadoEm: criadoEm(),
+});
+
+export const despesas = pgTable(
+  "despesas",
+  {
+    id: serial("id").primaryKey(),
+    data: date("data", { mode: "string" }).notNull(),
+    categoria: text("categoria", {
+      enum: ["combustivel", "manutencao", "oleo_pneus_pecas", "terceirizado", "pedagio_estacionamento", "outras"],
+    }).notNull(),
+    descricao: text("descricao"),
+    valor: valor("valor").notNull(),
+    // Para qual área/modal o custo é apropriado no resultado. "geral" = custo da empresa como um todo.
+    area: text("area", { enum: ["enfermagem", "logistica", "geral"] }).notNull(),
+    modal: text("modal", { enum: ["moto", "carro", "terceirizado"] }),
+    veiculoId: integer("veiculo_id").references(() => veiculos.id),
+    litros: numeric("litros", { precision: 10, scale: 2, mode: "number" }),
+    km: integer("km"),
+    status: text("status", { enum: ["ativa", "cancelada"] }).notNull().default("ativa"),
+    motivoCancelamento: text("motivo_cancelamento"),
+    criadoPor: integer("criado_por").references(() => usuarios.id),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index("despesas_data_idx").on(t.data)],
+);
+
 /** Cópia congelada dos itens de um fechamento: o relatório é sempre gerado a partir daqui. */
 export const fechamentoItens = pgTable(
   "fechamento_itens",
