@@ -1,12 +1,9 @@
 import { eq } from "drizzle-orm";
 import { beforeAll, describe, expect, it } from "vitest";
-import { getDb, schema, type DB } from "@/db";
+import { schema, type DB } from "@/db";
 import { gerarFechamento, pendenciasDoMes, previaFechamento, reabrirFechamento, relatorioDoFechamento } from "./fechamento";
 import { tarifaPara } from "./lancamentos";
-
-// Banco PGlite em memória, com as migrações reais.
-process.env.PGLITE_DIR = "memory://";
-delete process.env.DATABASE_URL;
+import { bancoDeTeste } from "./test-db";
 
 let db: DB;
 let empresaId: number;
@@ -25,10 +22,7 @@ async function lancar(v: Partial<typeof schema.lancamentos.$inferInsert> & { pac
 }
 
 beforeAll(async () => {
-  db = await getDb();
-  const { migrate } = await import("drizzle-orm/pglite/migrator");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await migrate(db as any, { migrationsFolder: "./drizzle" });
+  db = await bancoDeTeste("curalog_teste_fechamento");
 
   [{ id: usuario }] = await db.insert(schema.usuarios).values({ nome: "Teste", email: "t@t", senhaHash: "x" }).returning();
   [{ id: empresaId }] = await db.insert(schema.empresas).values({ nome: "Empresa A" }).returning();

@@ -1,11 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { beforeAll, describe, expect, it } from "vitest";
-import { getDb, schema, type DB } from "@/db";
+import { schema, type DB } from "@/db";
 import { gerarFechamento } from "./fechamento";
 import { carregarPlano, conferenciaDoMes, pendenciasPorPlano, registrarRealizados, type PlanoCompleto } from "./planos";
-
-process.env.PGLITE_DIR = "memory://";
-delete process.env.DATABASE_URL;
+import { bancoDeTeste } from "./test-db";
 
 let db: DB;
 let usuario: number;
@@ -13,10 +11,7 @@ let empresaId: number;
 let plano: PlanoCompleto;
 
 beforeAll(async () => {
-  db = await getDb();
-  const { migrate } = await import("drizzle-orm/pglite/migrator");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await migrate(db as any, { migrationsFolder: "./drizzle" });
+  db = await bancoDeTeste("curalog_teste_planos");
   [{ id: usuario }] = await db.insert(schema.usuarios).values({ nome: "T", email: "t@t", senhaHash: "x" }).returning();
   [{ id: empresaId }] = await db.insert(schema.empresas).values({ nome: "Empresa" }).returning();
   const [{ id: pacienteId }] = await db.insert(schema.pacientes).values({ nome: "Maria", empresaId }).returning();
