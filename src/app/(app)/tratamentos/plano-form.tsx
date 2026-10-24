@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { useAcao } from "@/components/use-acao";
 import { dosesPrevistas, FREQUENCIAS, horariosPorFrequencia, lerHorarios } from "@/lib/doses";
-import type { EstadoAcao } from "@/lib/form";
 import type { PacienteOpcao } from "../lancamentos/lancamento-form";
 import { salvarPlano } from "./actions";
 
@@ -36,7 +36,7 @@ function horariosValidos(texto: string): string[] | null {
 }
 
 export function PlanoForm({ pacientes, hoje, inicial }: { pacientes: PacienteOpcao[]; hoje: string; inicial?: PlanoInicial }) {
-  const [estado, formAction, pendente] = useActionState<EstadoAcao, FormData>(salvarPlano, {});
+  const [estado, enviar, pendente] = useAcao(salvarPlano);
   const [tipo, setTipo] = useState<"medicacao" | "curativo">(inicial?.tipo ?? "medicacao");
   const [inicioData, setInicioData] = useState(inicial?.inicioData ?? hoje);
   const [inicioHora, setInicioHora] = useState(inicial?.inicioHora ?? "06:00");
@@ -68,7 +68,7 @@ export function PlanoForm({ pacientes, hoje, inicial }: { pacientes: PacienteOpc
   }
 
   return (
-    <form action={formAction} className="cartao max-w-4xl">
+    <form {...enviar} className="cartao max-w-4xl">
       {inicial && <input type="hidden" name="id" value={inicial.id} />}
       <input type="hidden" name="tipo" value={tipo} />
       <input type="hidden" name="itens" value={JSON.stringify(itens.map(({ descricao, horarios }) => ({ descricao, horarios })))} />

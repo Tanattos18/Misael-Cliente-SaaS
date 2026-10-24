@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { beforeAll, describe, expect, it } from "vitest";
 import { schema, type DB } from "@/db";
 import { gerarFechamento } from "./fechamento";
-import { carregarPlano, conferenciaDoMes, pendenciasPorPlano, registrarRealizados, type PlanoCompleto } from "./planos";
+import { carregarPlano, conferenciaDoMes, pendenciasPorPlano, registrarRealizados, tratamentoNaData, type PlanoCompleto } from "./planos";
 import { bancoDeTeste } from "./test-db";
 
 let db: DB;
@@ -69,5 +69,24 @@ describe("conferência de tratamento", () => {
     const r = await registrarRealizados(db, usuario, plano, { "2026-09-01": 1 });
     expect(r.ignorados).toEqual(["2026-09-01 (já em fechamento)"]);
     expect((await lancamentoDoDia("2026-09-01")).quantidade).toBe(5);
+  });
+});
+
+describe("lançamento avulso × tratamento", () => {
+  it("encontra o tratamento que cobre a data (inclusive o dia do término)", async () => {
+    expect(await tratamentoNaData(db, plano.pacienteId, "medicacao", "2026-09-02")).toEqual({ id: plano.id });
+    expect(await tratamentoNaData(db, plano.pacienteId, "medicacao", "2026-09-04")).toEqual({ id: plano.id });
+    expect(await tratamentoNaData(db, plano.pacienteId, "medicacao", "2026-09-05")).toBeNull();
+    expect(await tratamentoNaData(db, plano.pacienteId, "curativo", "2026-09-02")).toBeNull();
+  });
+
+  it("conferência mostra lançamentos avulsos do mesmo dia", async () => {
+    await db.insert(schema.lancamentos).values({
+      area: "enfermagem", tipo: "medicacao", pacienteId: plano.pacienteId, empresaId, data: "2026-09-02",
+      quantidade: 2, valorUnitario: 55, valorTotal: 110,
+    });
+    const dias = await conferenciaDoMes(db, plano, "2026-09");
+    expect(dias.find((d) => d.data === "2026-09-02")?.avulsos).toBe(2);
+    expect(dias.find((d) => d.data === "2026-09-01")?.avulsos).toBe(0);
   });
 });

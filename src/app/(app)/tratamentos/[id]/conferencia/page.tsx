@@ -75,6 +75,7 @@ export default async function ConferenciaPage({ params, searchParams }: PageProp
             cancelado: d.cancelado,
             bloqueado: d.bloqueado,
             futuro: d.futuro,
+            avulsos: d.avulsos,
           }))}
         />
       )}

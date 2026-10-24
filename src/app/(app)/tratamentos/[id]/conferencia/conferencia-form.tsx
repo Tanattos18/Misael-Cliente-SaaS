@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import type { EstadoAcao } from "@/lib/form";
+import { useState } from "react";
+import { useAcao } from "@/components/use-acao";
 import { Selo } from "@/components/ui";
 import { salvarConferencia } from "../../actions";
 
@@ -13,10 +13,11 @@ type Dia = {
   cancelado: boolean;
   bloqueado: boolean;
   futuro: boolean;
+  avulsos: number;
 };
 
 export function ConferenciaForm({ planoId, dias }: { planoId: number; dias: Dia[] }) {
-  const [estado, formAction, pendente] = useActionState<EstadoAcao, FormData>(salvarConferencia, {});
+  const [estado, enviar, pendente] = useAcao(salvarConferencia);
   const [valores, setValores] = useState<Record<string, string>>(
     Object.fromEntries(dias.map((d) => [d.data, d.realizadas === null ? "" : String(d.realizadas)])),
   );
@@ -29,7 +30,7 @@ export function ConferenciaForm({ planoId, dias }: { planoId: number; dias: Dia[
     });
 
   return (
-    <form action={formAction} className="cartao overflow-x-auto p-0">
+    <form {...enviar} className="cartao overflow-x-auto p-0">
       <input type="hidden" name="planoId" value={planoId} />
       <table className="tabela">
         <thead>
@@ -62,7 +63,14 @@ export function ConferenciaForm({ planoId, dias }: { planoId: number; dias: Dia[
                     onChange={(e) => setValores((x) => ({ ...x, [d.data]: e.target.value }))}
                   />
                 </td>
-                <td>{situacao}</td>
+                <td>
+                  {situacao}
+                  {d.avulsos > 0 && (
+                    <a href={`/lancamentos?mes=${d.data.slice(0, 7)}`} className="ml-1" title="Há lançamento avulso deste serviço para o paciente neste dia: confira se não está cobrando duas vezes">
+                      <Selo tipo="em_atraso">+{d.avulsos} avulso</Selo>
+                    </a>
+                  )}
+                </td>
               </tr>
             );
           })}

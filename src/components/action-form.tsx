@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import type { EstadoAcao } from "@/lib/form";
+import { useAcao } from "./use-acao";
 
 type Props = {
   action: (estado: EstadoAcao, formData: FormData) => Promise<EstadoAcao>;
@@ -12,15 +13,28 @@ type Props = {
   confirmar?: string;
 };
 
-/** Formulário ligado a uma Server Action, com mensagem de erro/sucesso e estado de envio. */
+/**
+ * Formulário ligado a uma Server Action, com mensagem de erro/sucesso e estado de envio.
+ * Em caso de erro mantém o que foi digitado; limpa só quando a ação dá certo.
+ */
 export function ActionForm({ action, children, className, botao = "Salvar", botaoClasse = "botao", confirmar }: Props) {
-  const [estado, formAction, pendente] = useActionState(action, {});
+  const ref = useRef<HTMLFormElement>(null);
+  const [estado, enviar, pendente] = useAcao(async (anterior, formData) => {
+    const r = await action(anterior, formData);
+    if (r.ok) ref.current?.reset();
+    return r;
+  });
   return (
     <form
-      action={formAction}
+      ref={ref}
       className={className}
+      action={enviar.action}
       onSubmit={(e) => {
-        if (confirmar && !window.confirm(confirmar)) e.preventDefault();
+        if (confirmar && !window.confirm(confirmar)) {
+          e.preventDefault();
+          return;
+        }
+        enviar.onSubmit(e);
       }}
     >
       {children}

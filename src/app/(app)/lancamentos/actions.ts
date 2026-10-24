@@ -11,6 +11,7 @@ import { MODAIS, TIPOS, areaDoTipo, type Modal, type Tipo } from "@/lib/dominio"
 import { centavos } from "@/lib/formato";
 import { lerForm, zData, zId, zIdOpcional, zTexto, zValor, type EstadoAcao } from "@/lib/form";
 import { acrescimoTerceirizado, lancamentoBloqueado, tarifaPara } from "@/lib/lancamentos";
+import { tratamentoNaData } from "@/lib/planos";
 import { valorTerceirizado } from "@/lib/tarifas";
 
 export async function sugerirValor(
@@ -47,6 +48,21 @@ export async function salvarLancamento(_: EstadoAcao, formData: FormData): Promi
   const db = await getDb();
   const [paciente] = await db.select().from(schema.pacientes).where(eq(schema.pacientes.id, dados.pacienteId));
   if (!paciente) return { erro: "Paciente não encontrado." };
+
+  // Medicação/curativo de paciente em tratamento é lançado pela conferência; avulso só se for extra.
+  if (dados.tipo === "medicacao" || dados.tipo === "curativo") {
+    const [atual] = dados.id
+      ? await db.select({ planoId: schema.lancamentos.planoId }).from(schema.lancamentos).where(eq(schema.lancamentos.id, dados.id))
+      : [];
+    const tratamento = atual?.planoId ? null : await tratamentoNaData(db, paciente.id, dados.tipo, dados.data);
+    if (tratamento && formData.get("confirmarExtra") !== "1") {
+      return {
+        erro: `${paciente.nome} tem um tratamento ativo nesta data, e esses atendimentos já são cobrados pela conferência do tratamento. Se este é um atendimento extra, fora da prescrição, marque a confirmação e lance de novo.`,
+        confirmar: "extra",
+        link: `/tratamentos/${tratamento.id}/conferencia?mes=${dados.data.slice(0, 7)}`,
+      };
+    }
+  }
 
   const corrida = dados.tipo === "corrida";
   if (corrida && !dados.modal) return { erro: "Informe o modal da corrida." };

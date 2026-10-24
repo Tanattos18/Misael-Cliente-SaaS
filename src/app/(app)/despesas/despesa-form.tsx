@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { useAcao } from "@/components/use-acao";
 import {
   AREAS_DESPESA,
   CATEGORIAS_DESPESA,
@@ -10,7 +11,6 @@ import {
   type AreaDespesa,
   type CategoriaDespesa,
 } from "@/lib/dominio";
-import type { EstadoAcao } from "@/lib/form";
 import { moeda } from "@/lib/formato";
 import { salvarDespesa } from "./actions";
 
@@ -44,7 +44,7 @@ export function DespesaForm({ veiculos, hoje, inicial, bloqueado }: { veiculos: 
   const [km, setKm] = useState(inicial?.km != null ? String(inicial.km) : "");
   const [descricao, setDescricao] = useState(inicial?.descricao ?? "");
 
-  const [estado, formAction, pendente] = useActionState<EstadoAcao, FormData>(async (anterior, formData) => {
+  const [estado, enviar, pendente] = useAcao(async (anterior, formData) => {
     const r = await salvarDespesa(anterior, formData);
     if (r.ok) {
       setValor("");
@@ -53,13 +53,13 @@ export function DespesaForm({ veiculos, hoje, inicial, bloqueado }: { veiculos: 
       setDescricao("");
     }
     return r;
-  }, {});
+  });
 
   const veiculo = VEICULARES.includes(categoria) ? veiculos.find((v) => String(v.id) === veiculoId) : undefined;
   const precoLitro = categoria === "combustivel" && num(litros) > 0 ? num(valor) / num(litros) : null;
 
   return (
-    <form action={formAction} className="cartao max-w-4xl">
+    <form {...enviar} className="cartao max-w-4xl">
       {inicial && <input type="hidden" name="id" value={inicial.id} />}
       <fieldset disabled={bloqueado} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <label className="sm:col-span-2">

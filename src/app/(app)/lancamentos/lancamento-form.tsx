@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
+import { useAcao } from "@/components/use-acao";
 import { ROTULO_MODAL, ROTULO_TIPO, TIPOS_ENFERMAGEM, type Area, type Modal, type Tipo } from "@/lib/dominio";
-import type { EstadoAcao } from "@/lib/form";
 import { moeda } from "@/lib/formato";
 import { valorTerceirizado } from "@/lib/tarifas";
 import { salvarLancamento, sugerirValor } from "./actions";
@@ -52,7 +52,7 @@ export function LancamentoForm({ area, pacientes, hoje, acrescimoPadrao, inicial
   const [destino, setDestino] = useState(inicial?.destino ?? "");
   const [obs, setObs] = useState(inicial?.observacoes ?? "");
 
-  const [estado, formAction, pendente] = useActionState<EstadoAcao, FormData>(async (anterior, formData) => {
+  const [estado, enviar, pendente] = useAcao(async (anterior, formData) => {
     const r = await salvarLancamento(anterior, formData);
     // Depois de lançar, limpa o paciente e mantém data/serviço para o próximo lançamento.
     if (r.ok && !inicial) {
@@ -66,7 +66,7 @@ export function LancamentoForm({ area, pacientes, hoje, acrescimoPadrao, inicial
       setQuantidade("1");
     }
     return r;
-  }, {});
+  });
   const [, iniciar] = useTransition();
 
   const terceirizado = tipo === "corrida" && modal === "terceirizado";
@@ -85,7 +85,7 @@ export function LancamentoForm({ area, pacientes, hoje, acrescimoPadrao, inicial
   const total = unitario * (Number(quantidade) || 0);
 
   return (
-    <form action={formAction} className="cartao max-w-4xl">
+    <form {...enviar} className="cartao max-w-4xl">
       {inicial && <input type="hidden" name="id" value={inicial.id} />}
       <input type="hidden" name="tipo" value={tipo} />
       <fieldset disabled={bloqueado} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -214,7 +214,18 @@ export function LancamentoForm({ area, pacientes, hoje, acrescimoPadrao, inicial
           </button>
         )}
       </div>
-      {estado.erro && <p className="mt-3 text-sm text-red-700">{estado.erro}</p>}
+      {estado.erro && (
+        <p className="mt-3 text-sm text-red-700">
+          {estado.erro}{" "}
+          {estado.link && <a href={estado.link} className="link">Abrir a conferência do tratamento</a>}
+        </p>
+      )}
+      {estado.confirmar === "extra" && (
+        <label className="mt-2 flex items-center gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+          <input type="checkbox" name="confirmarExtra" value="1" />
+          Confirmo que é um atendimento extra, fora da prescrição do tratamento.
+        </label>
+      )}
       {estado.ok && <p className="mt-3 text-sm text-teal-700">✓ {estado.ok}</p>}
     </form>
   );

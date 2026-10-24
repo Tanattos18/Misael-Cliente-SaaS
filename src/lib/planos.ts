@@ -1,4 +1,4 @@
-import { and, asc, between, eq, inArray } from "drizzle-orm";
+import { and, asc, between, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { schema, type DB } from "@/db";
 import { auditar } from "./auditoria";
 import { dosesPrevistas, type DiaPrevisto, type PlanoDoses } from "./doses";
@@ -39,6 +39,33 @@ export async function carregarPlano(db: DB, id: number): Promise<PlanoCompleto |
   return (await carregarPlanos(db, [id]))[0] ?? null;
 }
 
+/**
+ * Tratamento ativo do paciente (mesmo tipo) que cobre a data, se houver.
+ * Usado para impedir que o mesmo atendimento seja cobrado pela conferência e por um lançamento avulso.
+ */
+export async function tratamentoNaData(
+  db: DB,
+  pacienteId: number,
+  tipo: "medicacao" | "curativo",
+  data: string,
+): Promise<{ id: number } | null> {
+  const P = schema.planos;
+  const [p] = await db
+    .select({ id: P.id })
+    .from(P)
+    .where(
+      and(
+        eq(P.pacienteId, pacienteId),
+        eq(P.tipo, tipo),
+        eq(P.ativo, true),
+        lte(P.inicioData, data),
+        or(isNull(P.fimData), gte(P.fimData, data)),
+      ),
+    )
+    .limit(1);
+  return p ?? null;
+}
+
 export type DiaConferencia = {
   data: string;
   previstas: DiaPrevisto["doses"];
@@ -47,6 +74,8 @@ export type DiaConferencia = {
   cancelado: boolean;
   bloqueado: boolean;
   futuro: boolean;
+  /** Lançamentos avulsos (fora do tratamento) do mesmo serviço e paciente neste dia. */
+  avulsos: number;
 };
 
 /** Previsto × realizado, dia a dia, no mês. */
@@ -57,6 +86,20 @@ export async function conferenciaDoMes(db: DB, plano: PlanoCompleto, competencia
     .select()
     .from(schema.lancamentos)
     .where(and(eq(schema.lancamentos.planoId, plano.id), between(schema.lancamentos.data, inicio, fim)));
+  const L = schema.lancamentos;
+  const avulsos = await db
+    .select({ data: L.data, qtd: sql<number>`sum(${L.quantidade})::int` })
+    .from(L)
+    .where(
+      and(
+        isNull(L.planoId),
+        eq(L.pacienteId, plano.pacienteId),
+        eq(L.tipo, plano.tipo),
+        eq(L.status, "realizado"),
+        between(L.data, inicio, fim),
+      ),
+    )
+    .groupBy(L.data);
   const hoje = hojeISO();
 
   const datas = [...new Set([...previstos.map((p) => p.data), ...lancs.map((l) => l.data)])].sort();
@@ -71,6 +114,7 @@ export async function conferenciaDoMes(db: DB, plano: PlanoCompleto, competencia
       cancelado: l?.status === "cancelado",
       bloqueado: l ? await lancamentoBloqueado(db, l.fechamentoId) : false,
       futuro: data > hoje,
+      avulsos: avulsos.find((a) => a.data === data)?.qtd ?? 0,
     });
   }
   return dias;
