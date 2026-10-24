@@ -30,7 +30,8 @@ O banco local fica em `~/.curalog/pglite` (fora do OneDrive de propósito — si
 | `npm run db:generate` | Gera migração após alterar `src/db/schema.ts` |
 | `npm run db:migrate` / `db:seed` | Aplica migrações / carga inicial |
 | `npm run db:demo` | Dados fictícios para demonstração (3 empresas, 9 pacientes, set/out) |
-| `npm run db:senha -- <email> <senha>` | Redefine a senha de um usuário (e o reativa) |
+| `npm run db:senha -- <email> <senha> [--provisoria]` | Redefine a senha de um usuário (e o reativa); `--provisoria` obriga a troca no próximo acesso |
+| `npm run test:pg -- --paginas` | Valida tudo num PostgreSQL real temporário |
 
 ## Etapa 1 — o que já está pronto
 
@@ -100,4 +101,10 @@ Cálculo em `src/lib/resultado.ts` (testado em `resultado.test.ts`).
 
 ## Produção
 
-Defina `DATABASE_URL` (PostgreSQL, ex.: Supabase região São Paulo) e `SESSION_SECRET`, rode `npm run db:migrate` e `npm run db:seed` uma vez e publique (Vercel ou VPS com `npm run build && npm start`).
+Guia completo (Supabase + Vercel ou VPS, variáveis, backup, segurança e checklist LGPD): **[docs/PRODUCAO.md](docs/PRODUCAO.md)**.
+
+Antes de publicar, valide num PostgreSQL real (sobe um Postgres temporário, roda testes, migrações, demonstração e abre todas as telas):
+
+```bash
+npm run test:pg -- --paginas
+```

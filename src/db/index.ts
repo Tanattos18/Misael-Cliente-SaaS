@@ -16,9 +16,17 @@ async function conectar(): Promise<DB> {
   const url = process.env.DATABASE_URL;
   if (url) {
     const postgres = (await import("postgres")).default;
-    const sql = postgres(url, { max: 10 });
+    const sql = postgres(url, {
+      max: Number(process.env.DB_POOL_MAX) || 5,
+      // Poolers em modo transação (Supabase porta 6543, PgBouncer) não aceitam prepared statements.
+      prepare: !/:6543\b|pgbouncer=true/.test(url),
+    });
     globalThis.__curalogFechar = () => sql.end();
     return drizzlePostgres(sql, { schema });
+  }
+  if (process.env.NODE_ENV === "production" && process.env.PERMITIR_PGLITE !== "1") {
+    // Sem isso, um deploy sem a variável gravaria dados num banco local que some a cada atualização.
+    throw new Error("DATABASE_URL não configurada. Em produção o sistema precisa de um PostgreSQL.");
   }
   const { PGlite } = await import("@electric-sql/pglite");
   const { drizzle } = await import("drizzle-orm/pglite");
