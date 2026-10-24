@@ -21,8 +21,23 @@ export const usuarios = pgTable("usuarios", {
   senhaHash: text("senha_hash").notNull(),
   perfil: text("perfil", { enum: ["admin", "operador"] }).notNull().default("operador"),
   ativo: boolean("ativo").notNull().default(true),
+  // Senha provisória (criada por outra pessoa): obriga a troca no próximo acesso.
+  trocarSenha: boolean("trocar_senha").notNull().default(false),
   criadoEm: criadoEm(),
 });
+
+/** Histórico de tentativas de login, usado para bloquear quem tenta adivinhar senhas. */
+export const tentativasLogin = pgTable(
+  "tentativas_login",
+  {
+    id: serial("id").primaryKey(),
+    email: text("email").notNull(),
+    ip: text("ip").notNull(),
+    sucesso: boolean("sucesso").notNull(),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index("tentativas_email_idx").on(t.email, t.criadoEm), index("tentativas_ip_idx").on(t.ip, t.criadoEm)],
+);
 
 export const empresas = pgTable("empresas", {
   id: serial("id").primaryKey(),

@@ -6,12 +6,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getDb, schema } from "@/db";
 import { auditar } from "@/lib/auditoria";
-import { exigirAdmin, exigirUsuario } from "@/lib/auth";
+import { exigirAdmin, exigirLogin } from "@/lib/auth";
 import { CHAVE_ACRESCIMO_TERCEIRIZADO } from "@/lib/dominio";
-import { lerForm, zValor, type EstadoAcao } from "@/lib/form";
+import { lerForm, zSenha, zValor, type EstadoAcao } from "@/lib/form";
 import { CHAVE_FIM_INCLUSIVO } from "@/lib/planos";
-
-const zSenha = z.string().min(8, "mínimo de 8 caracteres");
 
 const NovoUsuario = z.object({
   nome: z.string().min(2, "informe o nome"),
@@ -27,13 +25,13 @@ export async function criarUsuario(_: EstadoAcao, formData: FormData): Promise<E
   const db = await getDb();
   const [novo] = await db
     .insert(schema.usuarios)
-    .values({ nome: dados.nome, email: dados.email.toLowerCase(), perfil: dados.perfil, senhaHash: await bcrypt.hash(dados.senha, 10) })
+    .values({ nome: dados.nome, email: dados.email.toLowerCase(), perfil: dados.perfil, senhaHash: await bcrypt.hash(dados.senha, 10), trocarSenha: true })
     .onConflictDoNothing()
     .returning();
   if (!novo) return { erro: "Já existe um usuário com esse e-mail." };
   await auditar(db, admin.uid, "criar", "usuario", novo.id, { nome: dados.nome, email: dados.email, perfil: dados.perfil });
   revalidatePath("/usuarios");
-  return { ok: "Usuário criado." };
+  return { ok: "Usuário criado. Ele vai trocar a senha no primeiro acesso." };
 }
 
 export async function alternarUsuario(formData: FormData) {
@@ -50,13 +48,15 @@ export async function alternarUsuario(formData: FormData) {
 const TrocaSenha = z.object({ atual: z.string().min(1), nova: zSenha });
 
 export async function trocarSenha(_: EstadoAcao, formData: FormData): Promise<EstadoAcao> {
-  const usuario = await exigirUsuario();
+  // exigirLogin: precisa funcionar também com a senha provisória pendente de troca.
+  const usuario = await exigirLogin();
   const { dados, erro } = lerForm(formData, TrocaSenha);
   if (!dados) return { erro };
   const db = await getDb();
   const [u] = await db.select().from(schema.usuarios).where(eq(schema.usuarios.id, usuario.uid));
   if (!u || !(await bcrypt.compare(dados.atual, u.senhaHash))) return { erro: "Senha atual incorreta." };
-  await db.update(schema.usuarios).set({ senhaHash: await bcrypt.hash(dados.nova, 10) }).where(eq(schema.usuarios.id, u.id));
+  if (dados.atual === dados.nova) return { erro: "A nova senha precisa ser diferente da atual." };
+  await db.update(schema.usuarios).set({ senhaHash: await bcrypt.hash(dados.nova, 10), trocarSenha: false }).where(eq(schema.usuarios.id, u.id));
   await auditar(db, u.id, "trocar_senha", "usuario", u.id);
   return { ok: "Senha alterada." };
 }

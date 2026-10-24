@@ -17,7 +17,7 @@ export default async function UsuariosPage() {
         <div className="grid gap-4 sm:grid-cols-4">
           <Campo rotulo="Nome"><input name="nome" className="campo" required /></Campo>
           <Campo rotulo="E-mail"><input name="email" type="email" className="campo" required /></Campo>
-          <Campo rotulo="Senha inicial"><input name="senha" type="password" minLength={8} className="campo" required autoComplete="new-password" /></Campo>
+          <Campo rotulo="Senha provisória (8+, letras e números)"><input name="senha" type="password" minLength={8} className="campo" required autoComplete="new-password" /></Campo>
           <Campo rotulo="Perfil">
             <select name="perfil" className="campo">
               <option value="operador">Operador</option>

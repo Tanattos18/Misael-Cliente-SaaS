@@ -29,3 +29,10 @@ export const zId = z.coerce.number().int().positive();
 export const zIdOpcional = zId.optional();
 export const zData = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "data inválida");
 export const zTexto = z.string().max(500).optional();
+
+/** Senha: mínimo 8 caracteres, com letras e números. */
+export const zSenha = z
+  .string()
+  .min(8, "a senha precisa ter pelo menos 8 caracteres")
+  .regex(/[a-zA-Z]/, "a senha precisa ter letras")
+  .regex(/\d/, "a senha precisa ter números");

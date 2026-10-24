@@ -4,10 +4,12 @@ import { fecharDb, getDb, schema } from "../src/db";
 
 /**
  * Redefine a senha de um usuário e o reativa.
- * Uso: npm run db:senha -- <email> <nova-senha>
+ * Uso: npm run db:senha -- <email> <nova-senha> [--provisoria]
+ * Com --provisoria, o usuário é obrigado a trocar a senha no próximo acesso.
  */
 async function main() {
-  const [email, senha] = process.argv.slice(2);
+  const [email, senha] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+  const provisoria = process.argv.includes("--provisoria");
   if (!email || !senha) {
     console.error("Uso: npm run db:senha -- <email> <nova-senha>");
     process.exit(1);
@@ -15,7 +17,7 @@ async function main() {
   const db = await getDb();
   const atualizados = await db
     .update(schema.usuarios)
-    .set({ senhaHash: await bcrypt.hash(senha, 10), ativo: true })
+    .set({ senhaHash: await bcrypt.hash(senha, 10), ativo: true, trocarSenha: provisoria })
     .where(eq(schema.usuarios.email, email.toLowerCase()))
     .returning({ id: schema.usuarios.id });
   if (atualizados.length === 0) {

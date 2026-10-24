@@ -38,7 +38,7 @@ export default async function ConfiguracoesPage() {
           <h2 className="mb-3 font-semibold">Minha senha</h2>
           <div className="space-y-3">
             <Campo rotulo="Senha atual"><input name="atual" type="password" className="campo" required autoComplete="current-password" /></Campo>
-            <Campo rotulo="Nova senha"><input name="nova" type="password" minLength={8} className="campo" required autoComplete="new-password" /></Campo>
+            <Campo rotulo="Nova senha (8+, letras e números)"><input name="nova" type="password" minLength={8} className="campo" required autoComplete="new-password" /></Campo>
           </div>
         </ActionForm>
       </div>

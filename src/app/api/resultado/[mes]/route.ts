@@ -1,14 +1,13 @@
 import { and, asc, between, eq } from "drizzle-orm";
-import { cookies } from "next/headers";
 import { getDb, schema } from "@/db";
 import { auditar } from "@/lib/auditoria";
+import { usuarioAutorizado } from "@/lib/auth";
 import { periodoDaCompetencia } from "@/lib/formato";
 import { gerarExcelResultado } from "@/lib/relatorio/resultado-excel";
 import { resultadoDoMes } from "@/lib/resultado";
-import { COOKIE_SESSAO, lerSessao } from "@/lib/sessao";
 
 export async function GET(_: Request, ctx: RouteContext<"/api/resultado/[mes]">) {
-  const sessao = await lerSessao((await cookies()).get(COOKIE_SESSAO)?.value);
+  const sessao = await usuarioAutorizado();
   if (!sessao) return new Response("Não autorizado", { status: 401 });
 
   const { mes } = await ctx.params;

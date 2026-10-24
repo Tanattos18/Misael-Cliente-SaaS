@@ -19,6 +19,8 @@ async function main() {
       email,
       senhaHash: await bcrypt.hash(senha, 10),
       perfil: "admin",
+      // Senha gerada aqui é provisória; a informada no .env é escolha de quem instala.
+      trocarSenha: !process.env.ADMIN_PASSWORD,
     });
     console.log(`Administrador criado: ${email}`);
     if (!process.env.ADMIN_PASSWORD) console.log(`Senha gerada (troque após o primeiro acesso): ${senha}`);
