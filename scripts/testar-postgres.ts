@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import EmbeddedPostgres from "embedded-postgres";
@@ -65,15 +65,28 @@ async function testarPaginas(databaseUrl: string): Promise<string[]> {
       if (!ok) falhas.push(rota);
     }
   } finally {
-    app.kill();
+    // No Windows, derrubar a árvore inteira antes (shell → npx → node), senão o Next fica órfão.
     if (process.platform === "win32" && app.pid) await rodar("taskkill", ["/PID", String(app.pid), "/T", "/F"], {});
+    else app.kill();
   }
   return falhas;
 }
 
+/**
+ * No Windows o stop() da biblioteca mata só o processo principal e os filhos do Postgres
+ * continuam segurando a porta; o pg_ctl encerra o servidor do jeito certo.
+ */
+async function pararPostgres(pg: EmbeddedPostgres, dir: string) {
+  if (process.platform !== "win32") return pg.stop();
+  const pgCtl = join(process.cwd(), "node_modules", "@embedded-postgres", "windows-x64", "native", "bin", "pg_ctl.exe");
+  await rodar(`"${pgCtl}"`, ["stop", "-D", `"${dir}"`, "-m", "fast", "-w"], {});
+  rmSync(dir, { recursive: true, force: true });
+}
+
 async function main() {
+  const dir = mkdtempSync(join(tmpdir(), "curalog-pg-"));
   const pg = new EmbeddedPostgres({
-    databaseDir: mkdtempSync(join(tmpdir(), "curalog-pg-")),
+    databaseDir: dir,
     port: PORTA_PG,
     user: "postgres",
     password: SENHA,
@@ -108,7 +121,7 @@ async function main() {
       }
     }
   } finally {
-    await pg.stop();
+    await pararPostgres(pg, dir);
   }
   console.log(codigo === 0 ? "\nTudo certo no PostgreSQL." : "\nHouve falhas (veja acima).");
   process.exit(codigo);
