@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Proposta Comercial — Sistema de Gestão CuraLog — Akylla Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 18mm 17mm 20mm; }
+  @page :first { margin: 0; }
+  :root {
+    --tinta: #11141b; --suave: #4b5263; --linha: #e3e6ee; --fundo-claro: #f5f6fa;
+    --roxo: #7c3aed; --azul: #2563eb; --ciano: #0891b2;
+    --grad: linear-gradient(120deg, #8b3dff, #3b6bff 55%, #12d6ff);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font-family: Inter, Arial, sans-serif; font-size: 10pt; line-height: 1.55; color: var(--tinta); }
+  h1, h2, h3 { font-family: "Space Grotesk", Arial, sans-serif; line-height: 1.2; margin: 0; }
+  h2 { font-size: 15pt; margin: 22px 0 10px; padding-top: 4px; display: flex; align-items: baseline; gap: 10px; break-after: avoid; }
+  h2 .num { font-size: 10pt; color: #fff; background: var(--grad); border-radius: 6px; padding: 2px 8px; }
+  h3 { font-size: 11pt; margin: 14px 0 6px; break-after: avoid; }
+  p { margin: 0 0 8px; }
+  ul, ol { margin: 0 0 8px; padding-left: 18px; }
+  li { margin-bottom: 3px; }
+  b, strong { font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 12px; font-size: 9.2pt; break-inside: avoid; }
+  tr { break-inside: avoid; }
+  th { text-align: left; font-family: "Space Grotesk", Arial, sans-serif; font-weight: 600; font-size: 8.8pt; color: #fff; background: #11141b; padding: 7px 9px; }
+  td { padding: 7px 9px; border-bottom: 1px solid var(--linha); vertical-align: top; }
+  tr.total td { background: var(--fundo-claro); font-weight: 700; }
+  tr.destaque td { background: #eef2ff; font-weight: 700; }
+  .num-col { text-align: right; white-space: nowrap; }
+  .nota { font-size: 8.8pt; color: var(--suave); }
+  .caixa { background: var(--fundo-claro); border-left: 4px solid var(--azul); border-radius: 8px; padding: 12px 14px; margin: 10px 0 12px; break-inside: avoid; }
+  .valor-grande { font-family: "Space Grotesk", Arial, sans-serif; font-size: 26pt; font-weight: 700; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .quebra { break-before: page; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cartao { border: 1px solid var(--linha); border-radius: 10px; padding: 12px 14px; break-inside: avoid; }
+  .cartao h3 { margin-top: 0; }
+  .rotulo { font-size: 7.8pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--azul); margin-bottom: 4px; }
+
+  /* Capa */
+  .capa { height: 297mm; width: 210mm; background: #0b0d12; color: #eef0f4; position: relative; overflow: hidden; padding: 26mm 20mm; display: flex; flex-direction: column; }
+  .capa::before { content: ""; position: absolute; right: -60mm; top: -50mm; width: 170mm; height: 170mm; border-radius: 50%; background: radial-gradient(circle, rgba(124,77,255,.55), rgba(59,107,255,.15) 55%, transparent 70%); }
+  .capa::after { content: ""; position: absolute; left: 0; bottom: 0; width: 100%; height: 6mm; background: var(--grad); }
+  .marca { display: flex; align-items: center; gap: 12px; position: relative; }
+  .marca img { width: 44px; height: 44px; border-radius: 10px; }
+  .marca span { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 17pt; letter-spacing: .01em; }
+  .capa .meio { margin-top: auto; position: relative; }
+  .capa .tipo { font-size: 10pt; letter-spacing: .25em; text-transform: uppercase; color: #5cc8ff; font-weight: 600; margin-bottom: 14px; }
+  .capa h1 { font-size: 34pt; font-weight: 700; line-height: 1.08; margin-bottom: 14px; }
+  .capa h1 em { font-style: normal; color: #5cc8ff; }
+  .capa .sub { font-size: 12pt; color: #9aa1b2; max-width: 140mm; }
+  .capa .dados { position: relative; margin-top: 22mm; display: grid; grid-template-columns: repeat(4, auto); gap: 10mm; justify-content: start; border-top: 1px solid #262b37; padding-top: 7mm; }
+  .capa .dados div { font-size: 8.5pt; color: #9aa1b2; }
+  .capa .dados b { display: block; color: #eef0f4; font-size: 10.5pt; font-weight: 600; margin-top: 2px; }
+
+  /* Cabeçalho das páginas internas */
+  .topo { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid transparent; border-image: var(--grad) 1; padding-bottom: 8px; margin-bottom: 14px; }
+  .topo .marca img { width: 26px; height: 26px; border-radius: 6px; }
+  .topo .marca span { font-size: 11pt; color: var(--tinta); }
+  .topo .ref { font-size: 8.5pt; color: var(--suave); text-align: right; }
+
+  .assinaturas { display: grid; grid-template-columns: 1fr 1fr; gap: 16mm; margin-top: 22mm; }
+  .assinaturas div { border-top: 1px solid var(--tinta); padding-top: 6px; font-size: 9pt; }
+  .check { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 6px; }
+  .check i { flex: none; width: 12px; height: 12px; border: 1.5px solid var(--tinta); border-radius: 3px; margin-top: 3px; }
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<section class="capa">
+  <div class="marca"><span>Akylla Studio</span></div>
+  <div class="meio">
+    <div class="tipo">Proposta comercial</div>
+    <h1>Sistema de gestão<br><em>CuraLog</em></h1>
+    <p class="sub">Desenvolvimento, implantação e treinamento de sistema web para enfermagem domiciliar, logística home care, faturamento mensal e financeiro.</p>
+    <div class="dados">
+      <div>Proposta nº<b>AKS-2026-001</b></div>
+      <div>Emitida em<b>27/10/2026</b></div>
+      <div>Válida até<b>26/11/2026</b></div>
+      <div>Para<b>CuraLog · Misael</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- PÁGINA 2 -->
+<div class="topo"><div class="marca"><span>Akylla Studio</span></div><div class="ref">Proposta AKS-2026-001 · Sistema de gestão CuraLog</div></div>
+
+<h2><span class="num">01</span> Identificação das partes</h2>
+<div class="grid2">
+  <div class="cartao">
+    <div class="rotulo">Contratada</div>
+    <h3>Akylla Studio</h3>
+    <p>Joás Santana Nascimento<br>
+    CNPJ 50.083.009/0001-81<br>
+    WhatsApp (62) 99165-7619<br>
+    akyllastudio.github.io</p>
+  </div>
+  <div class="cartao">
+    <div class="rotulo">Contratante</div>
+    <h3>CuraLog</h3>
+    <p>Responsável: Misael [sobrenome]<br>
+    CNPJ [__.___.___/____-__]<br>
+    [Endereço]<br>
+    [Telefone] · [E-mail]</p>
+  </div>
+</div>
+
+<h2><span class="num">02</span> Objetivo</h2>
+<p>Hoje a CuraLog controla atendimentos de enfermagem, corridas, faturamento e despesas em planilhas separadas, e monta à mão o relatório de cada empresa contratante no fim do mês.</p>
+<p>Esta proposta entrega um <b>sistema web único</b>, pronto para uso, em que a equipe lança os serviços ao longo do mês e, no fechamento, obtém automaticamente as planilhas de cada empresa, os valores a receber, as despesas e o resultado de cada área. A prioridade definida pela CuraLog — o <b>fechamento mensal com planilhas por empresa</b> — está na primeira etapa.</p>
+
+<div class="caixa">
+  <div class="rotulo">Investimento para entrega completa</div>
+  <span class="valor-grande">R$ 42.000</span> &nbsp;<span class="nota">ou <b>R$ 39.500</b> contratando o pacote completo · prazo de 5 semanas</span>
+</div>
+
+<!-- ESCOPO -->
+<h2><span class="num">03</span> Escopo do sistema</h2>
+<table>
+  <tr><th style="width:24%">Módulo</th><th>O que entrega</th></tr>
+  <tr><td><b>Cadastros</b></td><td>Empresas contratantes (com prazo de pagamento), pacientes, regiões, veículos e usuários. Ao escolher o paciente, a empresa e o valor são preenchidos automaticamente.</td></tr>
+  <tr><td><b>Tarifas</b></td><td>Valor por serviço com prioridade paciente › empresa › região › padrão; corridas por cidade e por moto ou carro; transporte terceirizado com acréscimo configurável.</td></tr>
+  <tr><td><b>Medicações e curativos</b></td><td>Tratamentos com várias medicações e frequências por paciente (1x, 12/12h, 8/8h, 6/6h…) e curativos diários; cálculo automático das doses previstas respeitando data e hora de início e término; conferência diária <b>previsto × realizado</b>.</td></tr>
+  <tr><td><b>Coletas e corridas</b></td><td>Lançamento de coletas de exames (vários pacientes no mesmo dia) e de corridas por moto, carro ou transportador, com origem e destino; correção e cancelamento com motivo; bloqueio de cobrança em dobro.</td></tr>
+  <tr><td><b>Fechamento mensal</b></td><td>Planilha individual por empresa e por área em <b>Excel e PDF</b>: pacientes, datas, quantidades, valores unitários e totais por paciente e por empresa. Geração de todas as empresas de uma vez; valores congelados após o fechamento; histórico de fechamentos.</td></tr>
+  <tr><td><b>Recebimentos</b></td><td>Acompanhamento de cada fechamento: calculado, enviado para conferência, aprovado, nota fiscal emitida e pago, com vencimento automático e alerta de atraso.</td></tr>
+  <tr><td><b>Financeiro</b></td><td>Despesas por categoria (combustível com litros e km, manutenção, óleo/pneus/peças, pedágios, terceirizados), consumo por veículo, resultado por área e por modal, comparativo de 6 meses e planilha para o contador.</td></tr>
+  <tr><td><b>Painel gerencial</b></td><td>Alertas do dia e indicadores do mês: faturamento por serviço, corridas por modal, a receber por empresa, despesas, combustível e manutenção, resultado por área e geral.</td></tr>
+  <tr><td><b>Segurança e LGPD</b></td><td>Usuário individual com perfis (administrador e operador), senha forte com troca obrigatória da senha provisória, bloqueio contra tentativas de invasão, registro de todas as alterações e backups diários.</td></tr>
+</table>
+
+<h3>Entregáveis</h3>
+<ul>
+  <li>Sistema implantado em produção, com domínio próprio e HTTPS, acessível pelo navegador no computador e no celular.</li>
+  <li>Cadastro inicial de empresas, pacientes, tarifas e veículos a partir das listas enviadas pela CuraLog.</li>
+  <li>Treinamento da equipe (até 2 sessões online de 1h30) e guia de uso em slides.</li>
+  <li>Apresentação comercial da CuraLog para enviar às empresas contratantes.</li>
+  <li>Código-fonte, documentação técnica e guia de produção e backup (no modelo de compra).</li>
+</ul>
+
+<!-- PRAZOS E INVESTIMENTO -->
+<h2><span class="num">04</span> Etapas e prazos</h2>
+<p>A entrega completa leva <b>5 semanas a partir da assinatura e do pagamento inicial</b>, liberando um módulo por vez para que a equipe aprenda cada parte antes da próxima. Cada etapa termina com a validação da CuraLog.</p>
+<table>
+  <tr><th style="width:28%">Etapa</th><th>O que é liberado</th><th style="width:16%">Prazo</th></tr>
+  <tr><td><b>1. Fechamento mensal</b></td><td>Implantação, cadastros, tarifas, lançamentos, fechamento com Excel/PDF e recebimentos; cadastro inicial e treinamento</td><td>Semanas 1 e 2</td></tr>
+  <tr><td><b>2. Tratamentos</b></td><td>Medicações e curativos com cálculo das doses e conferência previsto × realizado</td><td>Semana 3</td></tr>
+  <tr><td><b>3. Financeiro</b></td><td>Veículos, despesas, combustível e resultado por área e modal</td><td>Semana 4</td></tr>
+  <tr><td><b>4. Painel gerencial</b></td><td>Painel, alertas, planilha do resultado mensal e ajustes finais</td><td>Semana 5</td></tr>
+</table>
+<p class="nota">Os prazos contam a partir do recebimento das informações da seção 09. Atrasos no envio dessas informações ou na validação de uma etapa deslocam as etapas seguintes.</p>
+
+<h2><span class="num">05</span> Investimento</h2>
+<table>
+  <tr><th>Etapa</th><th class="num-col" style="width:22%">Valor</th></tr>
+  <tr><td>1. Fechamento mensal (inclui implantação, cadastro inicial e treinamento)</td><td class="num-col">R$ 15.000,00</td></tr>
+  <tr><td>2. Tratamentos — medicações e curativos</td><td class="num-col">R$ 10.000,00</td></tr>
+  <tr><td>3. Financeiro — despesas e resultado por área</td><td class="num-col">R$ 10.000,00</td></tr>
+  <tr><td>4. Painel gerencial</td><td class="num-col">R$ 7.000,00</td></tr>
+  <tr class="total"><td>Total contratando por etapa</td><td class="num-col">R$ 42.000,00</td></tr>
+  <tr class="destaque"><td>Pacote completo — as 4 etapas contratadas de uma vez (6% de desconto)</td><td class="num-col">R$ 39.500,00</td></tr>
+</table>
+
+<h3>Formas de pagamento</h3>
+<ul>
+  <li><b>Por etapa:</b> 50% no início de cada etapa e 50% na entrega e aceite dela.</li>
+  <li><b>Pacote completo:</b> 50% na assinatura e 50% na entrega final; ou entrada de 30% e o saldo em 3 parcelas mensais iguais.</li>
+  <li>Pagamento por PIX ou transferência bancária. Dados bancários enviados com a confirmação.</li>
+</ul>
+<p class="nota">Valores não incluem hospedagem, domínio e serviços de terceiros (seção 06). Pedidos fora deste escopo são orçados à parte, a R$ 110,00 por hora ou com valor fechado, sempre aprovados antes de começar.</p>
+
+<!-- HOSPEDAGEM E MANUTENÇÃO -->
+<h2 class="quebra"><span class="num">06</span> Hospedagem e manutenção</h2>
+<p>A hospedagem é contratada em nome da CuraLog e paga diretamente aos provedores. Tudo fica em nome da empresa: ela não fica presa à Akylla Studio nem a nenhuma plataforma. Recomendo a opção gerenciada, por guardar dados de saúde com backup automático no Brasil.</p>
+<table>
+  <tr><th style="width:30%">Hospedagem</th><th>O que inclui</th><th class="num-col" style="width:22%">Custo estimado</th></tr>
+  <tr><td><b>Gerenciada</b> (recomendada)<br><span class="nota">Supabase + Vercel</span></td><td>Banco de dados em São Paulo, backup diário automático, HTTPS e alta disponibilidade</td><td class="num-col">~R$ 250/mês<br><span class="nota">US$ 45, varia com o dólar</span></td></tr>
+  <tr><td><b>Servidor próprio</b><br><span class="nota">VPS no Brasil</span></td><td>Servidor dedicado, com backup diário e cópia externa configurados pela Akylla Studio</td><td class="num-col">R$ 60 a 150/mês</td></tr>
+  <tr><td><b>Domínio</b> .com.br</td><td>Endereço do sistema</td><td class="num-col">~R$ 40/ano</td></tr>
+</table>
+
+<h3>Manutenção mensal (opcional, após a garantia)</h3>
+<table>
+  <tr><th style="width:24%">Plano</th><th>O que inclui</th><th class="num-col" style="width:18%">Valor</th></tr>
+  <tr><td><b>Básico</b></td><td>Monitoramento, backups, atualizações de segurança e correção de falhas</td><td class="num-col">R$ 700/mês</td></tr>
+  <tr class="destaque"><td>Padrão (recomendado)</td><td>Básico + até 8 h/mês de ajustes, suporte à equipe e pequenas melhorias</td><td class="num-col">R$ 1.200/mês</td></tr>
+  <tr><td><b>Evolução</b></td><td>Básico + até 16 h/mês para novas funcionalidades</td><td class="num-col">R$ 2.000/mês</td></tr>
+</table>
+<p class="nota">Horas não usadas no mês não acumulam; horas extras são cobradas a R$ 110,00.</p>
+
+<h2><span class="num">07</span> Alternativa: assinatura mensal</h2>
+<p>Para um investimento inicial menor, o sistema pode ser contratado como assinatura: <b>R$ 16.000,00 de implantação + R$ 2.200,00 por mês</b>, com fidelidade de 12 meses. A mensalidade inclui hospedagem gerenciada, backups, manutenção e até 8 h/mês de ajustes. A CuraLog recebe licença de uso enquanto a assinatura estiver ativa; os dados são sempre dela e, ao encerrar, recebe cópia completa em até 15 dias.</p>
+<table>
+  <tr><th>Comparativo</th><th class="num-col" style="width:22%">Compra (pacote)</th><th class="num-col" style="width:22%">Assinatura</th></tr>
+  <tr><td>Investimento inicial</td><td class="num-col">R$ 39.500</td><td class="num-col">R$ 16.000</td></tr>
+  <tr><td>Hospedagem (12 meses) + manutenção padrão (9 meses, após a garantia)</td><td class="num-col">~R$ 13.800</td><td class="num-col">incluídas</td></tr>
+  <tr><td>Mensalidades (12 meses)</td><td class="num-col">—</td><td class="num-col">R$ 26.400</td></tr>
+  <tr class="total"><td>Total no 1º ano</td><td class="num-col">~R$ 53.300</td><td class="num-col">R$ 42.400</td></tr>
+  <tr class="total"><td>A partir do 2º ano, por ano</td><td class="num-col">~R$ 17.400</td><td class="num-col">R$ 26.400</td></tr>
+  <tr><td>Código-fonte</td><td class="num-col">da CuraLog</td><td class="num-col">da Akylla Studio</td></tr>
+</table>
+
+<!-- CONDIÇÕES -->
+<h2 class="quebra"><span class="num">08</span> Garantia, suporte e propriedade</h2>
+<ul>
+  <li><b>Garantia de 90 dias</b> após a entrega de cada etapa: qualquer falha é corrigida sem custo.</li>
+  <li><b>Suporte:</b> pelo WhatsApp (62) 99165-7619, de segunda a sexta, das 9h às 18h. Falha que impeça o fechamento do mês tem prioridade, com resposta em até 4 horas úteis.</li>
+  <li><b>Propriedade (modelo de compra):</b> após a quitação, o código-fonte e a documentação técnica passam à CuraLog, no repositório dela. A Akylla Studio pode reutilizar componentes genéricos, nunca dados ou regras exclusivas da CuraLog.</li>
+  <li><b>Dados e LGPD:</b> os dados de pacientes e empresas pertencem à CuraLog. A Akylla Studio acessa a base apenas para suporte e manutenção, mantém sigilo e não compartilha dados com terceiros.</li>
+</ul>
+
+<h2><span class="num">09</span> Fora do escopo e responsabilidades da contratante</h2>
+<div class="grid2">
+  <div class="cartao">
+    <div class="rotulo">Não incluído</div>
+    <ul>
+      <li>Custos de hospedagem, domínio e serviços de terceiros.</li>
+      <li>Aplicativo para celular da equipe, portal para as empresas contratantes e emissão de nota fiscal integrada.</li>
+      <li>Digitação de histórico anterior à implantação; importação de planilhas antigas pode ser orçada à parte.</li>
+    </ul>
+  </div>
+  <div class="cartao">
+    <div class="rotulo">Cabe à CuraLog</div>
+    <ul>
+      <li>Informar a tabela de valores (inclusive corridas de carro por cidade) e confirmar as regras de contagem de doses.</li>
+      <li>Enviar as listas de empresas, pacientes e veículos para o cadastro inicial.</li>
+      <li>Indicar um responsável para validar cada etapa em até 5 dias úteis.</li>
+      <li>Contratar a hospedagem em nome da empresa.</li>
+    </ul>
+  </div>
+</div>
+
+<h2><span class="num">10</span> Condições gerais</h2>
+<ul>
+  <li>Esta proposta é válida até <b>26/11/2026</b>. Após essa data, valores e prazos podem ser revistos.</li>
+  <li>O aceite desta proposta, assinada ou confirmado por escrito (e-mail ou WhatsApp), autoriza o início dos trabalhos após o pagamento inicial.</li>
+  <li>Em caso de cancelamento, são devidas as etapas já iniciadas; valores pagos por etapas não iniciadas são devolvidos.</li>
+  <li>Valores de manutenção e assinatura são reajustados anualmente pelo IPCA.</li>
+  <li>Fica eleito o foro da comarca de Goiânia/GO.</li>
+</ul>
+
+<h2 class="quebra"><span class="num">11</span> Aceite</h2>
+<p>Opção escolhida:</p>
+<div class="check"><i></i><span>Compra por etapa — R$ 42.000,00</span></div>
+<div class="check"><i></i><span>Compra do pacote completo — R$ 39.500,00</span></div>
+<div class="check"><i></i><span>Assinatura — R$ 16.000,00 + R$ 2.200,00/mês (12 meses)</span></div>
+<div class="check"><i></i><span>Manutenção mensal: ( ) Básico &nbsp; ( ) Padrão &nbsp; ( ) Evolução &nbsp; ( ) Não contratar</span></div>
+<div class="check"><i></i><span>Hospedagem: ( ) Gerenciada &nbsp; ( ) Servidor próprio</span></div>
+
+<p style="margin-top:14px">Goiânia, ____ de ______________ de 2026.</p>
+<div class="assinaturas">
+  <div><b>CuraLog</b><br>Misael [sobrenome]<br>CNPJ [__.___.___/____-__]</div>
+  <div><b>Akylla Studio</b><br>Joás Santana Nascimento<br>CNPJ 50.083.009/0001-81</div>
+</div>
+
+</body>
+</html>
